@@ -30,7 +30,7 @@ class AuthController extends Controller
         $input['password'] = bcrypt($input['password']);
         $user = User::create($input);
 
-        $success['token'] = $user->createtokens('card_reader_reg')->plaiTextToken;
+        $success['token'] = $user->createToken('card_reader_token')->plainTextToken;
         $success['name'] = $user->name;
 
         return response()->json(['success' => true, 'data' => $success, 'message' => 'User Registered successfully.'], 200);
@@ -39,17 +39,23 @@ class AuthController extends Controller
     // login api
     public function login(Request $request)
     {
+        // dd($request);
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
-            $success['token'] = $user->createToken('card_reader_reg')->accessToken;
+
+            $success['token'] = $user->createToken('card_reader_token')->plainTextToken;
             $success['name'] = $user->name;
+           // dd($success['token']);
 
-            return response()->json(['success' => true, 'data' => $success, 'message' => 'User is logged in successfully'], 200);
+            return response()->json([
+                'success' => true,
+                'data' => $success,
+                'message' => 'User is logged in successfully'
+            ], 200);
         }
-
-        throw ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]);
+        else {
+            return response()->json(['success' => false, 'message' => 'User is unauthorized']);
+        }
     }
 
     // logout api
